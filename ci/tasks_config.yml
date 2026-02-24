@@ -1,0 +1,42 @@
+# Konfiguracja walidacji zadań (tasks_config.yml)
+#
+# Task na liście = uruchom daną walidację
+# Task NIE na liście = pomiń (skip)
+#
+# plan   - walidacja Terraform plan (validate_plan.py)
+# quiz   - sprawdzenie odpowiedzi quizu (check_quiz.py)
+# manual - weryfikacja kroków manualnych w Azure (check_manual_steps.py)
+#
+# Przykład: task001 ma tylko plan, task002 ma quiz+plan, task005 ma wszystko
+
+plan:
+  - task001
+  - task002
+  - task003
+  - task4
+  - task5
+  - task6
+  - task7
+  - task8
+  - task009
+  - task010
+  - task012
+  - task013
+  - task014
+
+quiz:
+  - task002
+  - task003
+  - task4
+  - task5
+  - task6
+  - task7
+  - task8
+  - task010
+  - task012
+
+manual:
+  - task5
+  - task6
+  - task7
+  - task8

@@ -1,0 +1,10 @@
+# Default
+* text=auto eol=lf
+
+# Force CRLF for quiz markdown files
+task002_quiz.md text eol=crlf
+task003_quiz.md text eol=crlf
+task005_quiz.md text eol=crlf
+task007_quiz.md text eol=crlf
+task010_quiz.md text eol=crlf
+task012_quiz.md text eol=crlf

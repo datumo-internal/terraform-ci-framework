@@ -1,0 +1,32 @@
+{
+  "course_name": "Azure Data Infrastructure Masterclass",
+  "technology": "Terraform & Azure",
+  "icons": {
+    "success": "🚀 SUCCESS",
+    "failure": "⛔ FAILURE",
+    "warning": "⚠️ WARNING",
+    "info": "ℹ️ INFO"
+  },
+  "steps": {
+    "quiz": {
+      "label": "Step 1: Quiz Check",
+      "success_msg": "Correct! You mastered the theory.",
+      "fail_msg": "Quiz failed! Check `instructions.md`."
+    },
+    "manual": {
+      "label": "Step 2: Manual Task Verification",
+      "success_msg": "Prerequisites met. Manual resources found.",
+      "fail_msg": "Missing resources from previous task (e.g. Identity/Container)."
+    },
+    "plan": {
+      "label": "Step 3: Azure Resource Definition",
+      "success_msg": "Valid Blueprint. Resources defined correctly.",
+      "fail_msg": "Syntax error or invalid configuration."
+    },
+    "apply": {
+      "label": "Step 4: Live Deployment",
+      "success_msg": "Infrastructure is live in Azure!",
+      "fail_msg": "Azure API rejected the deployment."
+    }
+  }
+}

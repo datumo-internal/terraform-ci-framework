@@ -1,0 +1,45 @@
+{
+  "task5": {
+    "description": "Checking Chapter 1 (Storage Container)",
+    "rg_suffix": "ch1",
+    "checks": [
+      {
+        "type": "container_exists",
+        "container_name": "manual-verification-done"
+      }
+    ]
+  },
+  "task6": {
+    "description": "Checking Chapter 2 (Managed Identity)",
+    "rg_suffix": "ch1",
+    "checks": [
+      {
+        "type": "resource_exists",
+        "resource_type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+        "name_contains": "id-adf"
+      }
+    ]
+  },
+  "task7": {
+    "description": "Checking Chapter 3 (Action Group)",
+    "rg_suffix": "ch1",
+    "checks": [
+      {
+        "type": "resource_exists",
+        "resource_type": "Microsoft.Insights/actionGroups",
+        "name_contains": "ag-support-email"
+      }
+    ]
+  },
+  "task8": {
+    "description": "Checking Chapter 4 (Synapse Workspace presence)",
+    "rg_suffix": "ch1",
+    "checks": [
+      {
+        "type": "resource_exists",
+        "resource_type": "Microsoft.Synapse/workspaces",
+        "name_contains": "syn"
+      }
+    ]
+  }
+}

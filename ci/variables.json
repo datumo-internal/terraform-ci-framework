@@ -1,0 +1,76 @@
+{
+  "task4": {
+    "mappings": [
+      {
+        "comment": "Task 1: Location",
+        "A": { "TF_VAR_location": "eastus" },
+        "B": { "TF_VAR_location": "westeurope" },
+        "C": { "TF_VAR_location": "northchina" },
+        "D": { "TF_VAR_location": "brazilsouth" }
+      },
+      {
+        "comment": "Task 2: Replication",
+        "A": { "TF_VAR_replication_type": "LRS" },
+        "B": { "TF_VAR_replication_type": "GRS" },
+        "C": { "TF_VAR_replication_type": "ZRS" },
+        "D": { "TF_VAR_replication_type": "RAGRS" }
+      }
+    ]
+  },
+  "task5": {
+    "mappings": [
+      {
+        "comment": "Task 1: Network Access",
+        "A": { "TF_VAR_adf_public_access": "true" },
+        "B": { "TF_VAR_adf_public_access": "false" }
+      },
+      {
+        "comment": "Task 2: Managed Identity",
+        "A": { "TF_VAR_adf_identity_type": "SystemAssigned" },
+        "B": { "TF_VAR_adf_identity_type": "UserAssigned" }
+      }
+    ]
+  },
+  "task6": {
+    "mappings": [
+      {
+        "comment": "Task 1: Log Retention",
+        "A": { "TF_VAR_log_retention": "30" },
+        "B": { "TF_VAR_log_retention": "365" }
+      },
+      {
+        "comment": "Task 2: Daily Cap",
+        "A": { "TF_VAR_daily_quota_gb": "1" },
+        "B": { "TF_VAR_daily_quota_gb": "5" }
+      }
+    ]
+  },
+  "task7": {
+    "mappings": [
+      {
+        "comment": "Task 1: Warehouse SKU",
+        "A": { "TF_VAR_synapse_sku": "DW100c" },
+        "B": { "TF_VAR_synapse_sku": "DW3000c" }
+      },
+      {
+        "comment": "Task 2: Storage Redundancy",
+        "A": { "TF_VAR_storage_repl": "LRS" },
+        "B": { "TF_VAR_storage_repl": "GRS" }
+      }
+    ]
+  },
+  "task8": {
+    "mappings": [
+      {
+        "comment": "Task 1: Trigger Frequency",
+        "B": { "TF_VAR_trigger_freq": "Day" },
+        "A": { "TF_VAR_trigger_freq": "Minute" }
+      },
+      {
+        "comment": "Task 2: Retry Policy",
+        "C": { "TF_VAR_retry_count": "3" },
+        "A": { "TF_VAR_retry_count": "0" }
+      }
+    ]
+  }
+}

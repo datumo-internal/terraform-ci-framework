@@ -1,0 +1,86 @@
+id,name,category,brand,price,stock,rating,date
+1,Laptop Gamingowy X1,Computers,TechCorp,4500.00,15,4.8,2024-02-01
+2,Mysz Bezprzewodowa Pro,Accessories,LogiTech,120.50,120,4.5,2024-02-01
+3,Monitor 4K UltraView,Monitors,ViewSonic,1800.00,30,4.7,2024-02-02
+4,Klawiatura Mechaniczna RGB,Accessories,RazerLite,350.00,45,4.6,2024-02-02
+5,Słuchawki ANC NoiseCancel,Audio,SoundMax,899.99,25,4.9,2024-02-03
+6,Smartfon Galaxy S24,Phones,Samsung,3200.00,10,4.8,2024-02-03
+7,Kabel HDMI 2.1 Gold,Cables,CableMaster,49.99,500,4.2,2024-02-04
+8,Podkładka pod mysz XXL,Accessories,GamerGear,29.99,200,4.4,2024-02-04
+9,Kamera Internetowa 1080p,Accessories,LogiTech,199.00,60,4.3,2024-02-05
+10,Dysk SSD 1TB NVMe,Components,Samsung,450.00,80,4.9,2024-02-05
+11,Procesor Intel i9,Components,Intel,2400.00,20,4.8,2024-02-06
+12,Karta Graficzna RTX 4070,Components,Nvidia,3100.00,5,4.9,2024-02-06
+13,Obudowa PC Silent,Components,BeQuiet,399.00,35,4.6,2024-02-07
+14,Zasilacz 750W Gold,Components,Corsair,550.00,40,4.7,2024-02-07
+15,Router Wi-Fi 6 AX,Networking,TP-Link,299.00,75,4.5,2024-02-08
+16,Switch 8-port Gigabit,Networking,Netgear,120.00,100,4.4,2024-02-08
+17,Tablet iPad Air,Tablets,Apple,2800.00,18,4.9,2024-02-09
+18,Rysik Apple Pencil,Accessories,Apple,599.00,50,4.7,2024-02-09
+19,Laptop MacBook Pro 14,Computers,Apple,9500.00,8,4.9,2024-02-10
+20,Hub USB-C 7in1,Accessories,Baseus,149.00,150,4.3,2024-02-10
+21,Głośnik Bluetooth Mini,Audio,JBL,199.00,90,4.6,2024-02-11
+22,Soundbar 2.1,Audio,Sony,800.00,25,4.5,2024-02-11
+23,Telewizor OLED 55,TV,LG,4500.00,12,4.8,2024-02-12
+24,Uchwyt ścienny TV,Accessories,Hama,89.00,200,4.2,2024-02-12
+25,Konsola PlayStation 5,Gaming,Sony,2400.00,30,4.9,2024-02-13
+26,Pad DualSense,Gaming,Sony,320.00,100,4.7,2024-02-13
+27,Gra FIFA 24,Gaming,EA,250.00,300,4.1,2024-02-14
+28,Fotel Gamingowy Diablo,Furniture,Diablo,899.00,15,4.6,2024-02-14
+29,Biurko Elektryczne,Furniture,Ikea,1200.00,10,4.5,2024-02-15
+30,Lampa Biurkowa LED,Lighting,Xiaomi,149.00,80,4.4,2024-02-15
+31,Drukarka Laserowa,Office,HP,550.00,25,4.3,2024-02-16
+32,Toner Czarny,Office,HP,120.00,60,4.2,2024-02-16
+33,Niszczarka Dokumentów,Office,Fellowes,200.00,30,4.4,2024-02-17
+34,Dysk Zewnętrzny 2TB,Storage,WD,350.00,90,4.6,2024-02-17
+35,Pendrive 128GB,Storage,SanDisk,59.00,300,4.5,2024-02-18
+36,Karta Pamięci 256GB,Storage,Samsung,120.00,150,4.7,2024-02-18
+37,Czytnik E-booków,Tablets,Kindle,500.00,40,4.8,2024-02-19
+38,Etui na Kindle,Accessories,Amazon,99.00,70,4.4,2024-02-19
+39,Powerbank 20000mAh,Accessories,Baseus,129.00,110,4.6,2024-02-20
+40,Ładowarka GaN 65W,Accessories,Baseus,149.00,90,4.7,2024-02-20
+41,Mikrofon Studyjny USB,Audio,Blue,450.00,25,4.6,2024-02-21
+42,Statyw do mikrofonu,Accessories,Mozos,80.00,50,4.3,2024-02-21
+43,Kamera Sportowa Go,Cameras,GoPro,1800.00,20,4.8,2024-02-22
+44,Uchwyt na kask,Accessories,GoPro,99.00,60,4.5,2024-02-22
+45,Dron Mini 4 Pro,Cameras,DJI,4200.00,15,4.9,2024-02-23
+46,Zestaw filtrów ND,Accessories,Freewell,250.00,40,4.7,2024-02-23
+47,Smartwatch GT 4,Wearables,Huawei,999.00,55,4.6,2024-02-24
+48,Opaska Sportowa Band 8,Wearables,Xiaomi,199.00,120,4.5,2024-02-24
+49,Projektor FullHD,TV,Optoma,2500.00,10,4.4,2024-02-25
+50,Ekran projekcyjny,Accessories,Avtek,400.00,20,4.3,2024-02-25
+51,Oczyszczacz Powietrza,Home,Xiaomi,600.00,45,4.7,2024-02-26
+52,Filtr HEPA,Home,Xiaomi,120.00,100,4.6,2024-02-26
+53,Robot Sprzątający,Home,Roborock,1800.00,25,4.8,2024-02-27
+54,Szczoteczka Soniczna,Health,Philips,300.00,60,4.7,2024-02-27
+55,Waga Łazienkowa Smart,Health,Huawei,99.00,80,4.4,2024-02-28
+56,Ekspres do Kawy,Home,DeLonghi,2200.00,15,4.8,2024-02-28
+57,Kawa Ziarnista 1kg,Home,Lavazza,60.00,200,4.6,2024-02-29
+58,Czajnik Elektryczny,Home,Bosch,150.00,50,4.5,2024-02-29
+59,Toster,Home,Philips,120.00,40,4.3,2024-03-01
+60,Blender Kielichowy,Home,Tefal,250.00,35,4.4,2024-03-01
+61,Monitor Zakrzywiony 34,Monitors,Dell,2200.00,12,4.8,2024-03-02
+62,Uchwyt na dwa monitory,Accessories,Art,150.00,50,4.4,2024-03-02
+63,Laptop Biurowy ThinkPad,Computers,Lenovo,3500.00,40,4.7,2024-03-03
+64,Stacja Dokująca,Accessories,Lenovo,800.00,25,4.5,2024-03-03
+65,Klawiatura Bezprzewodowa,Accessories,LogiTech,150.00,100,4.5,2024-03-04
+66,Mysz Ergonomiczna,Accessories,LogiTech,300.00,55,4.7,2024-03-04
+67,Słuchawki douszne TWS,Audio,JBL,250.00,90,4.4,2024-03-05
+68,Głośnik Imprezowy,Audio,JBL,1500.00,20,4.8,2024-03-05
+69,Aparat Bezlusterkowy,Cameras,Sony,6000.00,10,4.9,2024-03-06
+70,Obiektyw 50mm,Cameras,Sony,1200.00,15,4.8,2024-03-06
+71,Karta SD 128GB V30,Storage,SanDisk,80.00,200,4.6,2024-03-07
+72,Torba na aparat,Accessories,Lowepro,250.00,40,4.5,2024-03-07
+73,Smartfon iPhone 15,Phones,Apple,4500.00,30,4.8,2024-03-08
+74,Ładowarka MagSafe,Accessories,Apple,199.00,80,4.6,2024-03-08
+75,Etui Skórzane,Accessories,Apple,250.00,60,4.4,2024-03-09
+76,Szkło Hartowane,Accessories,Spigen,50.00,300,4.5,2024-03-09
+77,Laptop Dell XPS 15,Computers,Dell,8000.00,10,4.7,2024-03-10
+78,Adapter USB-C HDMI,Accessories,Dell,120.00,100,4.3,2024-03-10
+79,Plecak na laptopa,Accessories,Samsonite,300.00,50,4.6,2024-03-11
+80,Mysz przewodowa,Accessories,LogiTech,40.00,150,4.2,2024-03-11
+81,Listwa Zasilająca,Accessories,Acar,50.00,200,4.5,2024-03-12
+82,Organizer Kabli,Accessories,Baseus,20.00,500,4.1,2024-03-12
+83,Wiatrak biurkowy USB,Home,Baseus,60.00,90,4.3,2024-03-13
+84,Podstawka pod laptopa,Accessories,Mozos,100.00,70,4.5,2024-03-13
+85,Gra Cyberpunk 2077,Gaming,CDPR,120.00,150,4.2,2024-03-14

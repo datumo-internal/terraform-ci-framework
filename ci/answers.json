@@ -1,0 +1,78 @@
+{
+  "task1": {
+    "resources": [],
+    "allow_extra": false
+  },
+  "task2": {
+    "resources": [
+      "azurerm_resource_group.rg",
+      "azurerm_storage_account.storageaccount",
+      "azurerm_databricks_workspace.databricksworkspace"
+    ],
+    "allow_extra": false
+  },
+  "task4": {
+    "resources": [
+      "azurerm_resource_group.rg",
+      "azurerm_storage_account.sa",
+      "azurerm_key_vault.kv",
+      "random_id.rn"
+    ],
+    "attributes": {
+      "azurerm_key_vault.kv": {
+        "sku_name": "standard"
+      }
+    },
+    "allow_extra": true
+  },
+  "task5": {
+    "resources": [
+      "azurerm_data_factory.adf"
+    ],
+    "attributes": {
+      "azurerm_data_factory.adf": {
+        "public_network_enabled": "True" 
+      }
+    },
+    "allow_extra": true
+  },
+  "task6": {
+    "resources": [
+      "azurerm_log_analytics_workspace.law",
+      "azurerm_monitor_diagnostic_setting.adf_logs"
+    ],
+    "attributes": {
+      "azurerm_log_analytics_workspace.law": {
+        "retention_in_days": "30"
+      }
+    },
+    "allow_extra": true
+  },
+  "task7": {
+    "resources": [
+      "azurerm_synapse_workspace.syn",
+      "azurerm_synapse_sql_pool.dwh",
+      "azurerm_storage_account.syn_sa"
+    ],
+    "attributes": {
+      "azurerm_synapse_sql_pool.dwh": {
+        "sku_name": "DW100c"
+      }
+    },
+    "allow_extra": true
+  },
+  "task8": {
+    "resources": [
+      "azurerm_data_factory_linked_service_azure_blob_storage.ls_blob",
+      "azurerm_data_factory_linked_service_synapse.ls_synapse",
+      "azurerm_data_factory_pipeline.pl_copy",
+      "azurerm_data_factory_trigger_schedule.trig"
+    ],
+    "attributes": {
+      "azurerm_data_factory_trigger_schedule.trig": {
+        "frequency": "Day"
+      }
+    },
+    "allow_extra": true
+  }
+}

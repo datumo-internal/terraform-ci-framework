@@ -1,0 +1,187 @@
+# =============================================================================
+# VALIDATION REPO (V) - Repozytorium z credentialami Azure
+# Uruchamiane przez repository_dispatch z repo studenta (S).
+# Wykonuje: terraform init, plan, parsowanie do JSON, manual check (Azure),
+# upload planu do Azure Blob, callback do repo studenta.
+# =============================================================================
+
+name: Validation (Terraform Plan + Azure Checks)
+
+on:
+  repository_dispatch:
+    types: [student_pr]
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+
+    steps:
+      - name: Checkout Student Repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.client_payload.repo }}
+          ref: ${{ github.event.client_payload.ref }}
+          token: ${{ secrets.FRAMEWORK_PAT }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f ci/requirements.txt ]; then pip install -r ci/requirements.txt; fi
+
+      - name: Determine task directory and checks
+        id: detect
+        run: |
+          TF_DIR="${{ github.event.client_payload.tf_dir }}"
+          if [ -z "$TF_DIR" ]; then
+            TASK_DIRS=$(ls -d task*/ 2>/dev/null | head -n 1 | sed 's#/##')
+            TF_DIR="$TASK_DIRS"
+          fi
+          if [ -z "$TF_DIR" ]; then
+            echo "No task directory found"
+            exit 1
+          fi
+          echo "tf_dir=$TF_DIR" >> $GITHUB_OUTPUT
+          python ci/which_checks.py "$TF_DIR" >> $GITHUB_OUTPUT 2>/dev/null || true
+
+      - name: Verify Quiz Answers
+        id: quiz
+        if: steps.detect.outputs.run_quiz == 'true'
+        continue-on-error: true
+        run: python ci/check_quiz.py "${{ steps.detect.outputs.tf_dir }}"
+
+      - name: Azure Login
+        if: steps.quiz.outcome == 'success' || steps.quiz.outcome == 'skipped'
+        uses: azure/login@v1
+        with:
+          creds: '{"clientId":"${{ secrets.ARM_CLIENT_ID }}","clientSecret":"${{ secrets.ARM_CLIENT_SECRET }}","subscriptionId":"${{ secrets.ARM_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.ARM_TENANT_ID }}"}'
+
+      - name: Setup Terraform Backend
+        id: backend
+        if: steps.quiz.outcome == 'success' || steps.quiz.outcome == 'skipped'
+        shell: bash
+        run: |
+          RAW_ID="${{ github.event.client_payload.student }}"
+          LOWER_ID=$(echo "$RAW_ID" | tr '[:upper:]' '[:lower:]')
+          STATE_RG="rg-course-${LOWER_ID}-state"
+          CLEAN_ID=$(echo "$LOWER_ID" | tr -cd 'a-z0-9')
+          SHORT_ID=${CLEAN_ID:0:22}
+          STATE_SA="st${SHORT_ID}"
+          STATE_CONTAINER="tfstate"
+          PLANS_CONTAINER="validation-plans"
+          LOCATION="northeurope"
+
+          if ! az group show --name "$STATE_RG" &>/dev/null; then
+            az group create --name "$STATE_RG" --location "$LOCATION";
+          fi
+
+          if ! az storage account show --name "$STATE_SA" --resource-group "$STATE_RG" &>/dev/null; then
+            az storage account create --name "$STATE_SA" --resource-group "$STATE_RG" --sku Standard_LRS --encryption-services blob;
+          fi
+
+          KEY=$(az storage account keys list --resource-group "$STATE_RG" --account-name "$STATE_SA" --query "[0].value" -o tsv)
+
+          if ! az storage container show --name "$STATE_CONTAINER" --account-name "$STATE_SA" --account-key "$KEY" &>/dev/null; then
+            az storage container create --name "$STATE_CONTAINER" --account-name "$STATE_SA" --account-key "$KEY";
+          fi
+
+          if ! az storage container show --name "$PLANS_CONTAINER" --account-name "$STATE_SA" --account-key "$KEY" &>/dev/null; then
+            az storage container create --name "$PLANS_CONTAINER" --account-name "$STATE_SA" --account-key "$KEY";
+          fi
+
+          echo "STATE_RG=$STATE_RG" >> $GITHUB_OUTPUT
+          echo "STATE_SA=$STATE_SA" >> $GITHUB_OUTPUT
+          echo "STATE_CONTAINER=$STATE_CONTAINER" >> $GITHUB_OUTPUT
+          echo "PLANS_CONTAINER=$PLANS_CONTAINER" >> $GITHUB_OUTPUT
+          echo "STORAGE_KEY=$KEY" >> $GITHUB_OUTPUT
+
+      - name: Check Manual Steps (Azure)
+        id: manual_check
+        if: (steps.quiz.outcome == 'success' || steps.quiz.outcome == 'skipped') && steps.detect.outputs.run_manual == 'true'
+        env:
+          TF_VAR_student_id: ${{ github.event.client_payload.student }}
+        run: |
+          python ci/check_manual_steps.py "${{ steps.detect.outputs.tf_dir }}" "${{ env.TF_VAR_student_id }}" || true
+
+      - name: Parse Answers to Env Vars
+        if: steps.manual_check.outcome == 'success' || steps.detect.outputs.run_manual == 'false'
+        run: |
+          if [ -f ci/set_env.py ]; then python ci/set_env.py "${{ steps.detect.outputs.tf_dir }}"; fi
+
+      - name: Create terraform.tfvars for CI
+        if: steps.manual_check.outcome == 'success' || steps.detect.outputs.run_manual == 'false'
+        run: |
+          if [ -f ci/create_tfvars.py ]; then python ci/create_tfvars.py "${{ steps.detect.outputs.tf_dir }}"; fi
+
+      - name: Setup Terraform
+        if: steps.manual_check.outcome == 'success' || steps.detect.outputs.run_manual == 'false'
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        if: steps.manual_check.outcome == 'success' || steps.detect.outputs.run_manual == 'false'
+        run: |
+          TASK_NAME=$(basename ${{ steps.detect.outputs.tf_dir }})
+          terraform -chdir=${{ steps.detect.outputs.tf_dir }} init -input=false \
+            -backend-config="resource_group_name=${{ steps.backend.outputs.STATE_RG }}" \
+            -backend-config="storage_account_name=${{ steps.backend.outputs.STATE_SA }}" \
+            -backend-config="container_name=${{ steps.backend.outputs.STATE_CONTAINER }}" \
+            -backend-config="key=${{ github.event.client_payload.student }}/${TASK_NAME}.tfstate"
+
+      - name: Terraform Plan
+        if: steps.manual_check.outcome == 'success' || steps.detect.outputs.run_manual == 'false'
+        id: plan
+        run: |
+          cd ${{ steps.detect.outputs.tf_dir }}
+          terraform plan -input=false -out=tfplan
+          terraform show -json tfplan > tfplan.json
+
+      - name: Upload Plan to Azure Blob & Generate SAS URL
+        if: steps.plan.outcome == 'success'
+        id: upload
+        shell: bash
+        run: |
+          REF_SAFE=$(echo "${{ github.event.client_payload.sha }}" | sed 's/\//-/g')
+          BLOB_NAME="plans/${{ github.event.client_payload.pr_number }}/${{ steps.detect.outputs.tf_dir }}/${REF_SAFE}.json"
+          az storage blob upload \
+            --account-name "${{ steps.backend.outputs.STATE_SA }}" \
+            --account-key "${{ steps.backend.outputs.STORAGE_KEY }}" \
+            --container-name "${{ steps.backend.outputs.PLANS_CONTAINER }}" \
+            --name "$BLOB_NAME" \
+            --file "${{ steps.detect.outputs.tf_dir }}/tfplan.json" \
+            --overwrite
+
+          # SAS URL ważny 2h - student repo pobierze plan
+          EXPIRY=$(date -u -d "+2 hours" +%Y-%m-%dT%H:%MZ)
+          SAS=$(az storage blob generate-sas \
+            --account-name "${{ steps.backend.outputs.STATE_SA }}" \
+            --account-key "${{ steps.backend.outputs.STORAGE_KEY }}" \
+            --container-name "${{ steps.backend.outputs.PLANS_CONTAINER }}" \
+            --name "$BLOB_NAME" \
+            --permissions r \
+            --expiry "$EXPIRY" \
+            -o tsv)
+
+          PLAN_URL="https://${{ steps.backend.outputs.STATE_SA }}.blob.core.windows.net/${{ steps.backend.outputs.PLANS_CONTAINER }}/${BLOB_NAME}?${SAS}"
+          echo "plan_url=$PLAN_URL" >> $GITHUB_OUTPUT
+
+      - name: Trigger Student Repo (Callback with Plan URL)
+        if: always() && github.event.client_payload.repo
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.FRAMEWORK_PAT }}
+          repository: ${{ github.event.client_payload.repo }}
+          event-type: validation_plan_ready
+          client-payload: '{"plan_url":"${{ steps.upload.outputs.plan_url }}","tf_dir":"${{ steps.detect.outputs.tf_dir }}","pr_number":${{ github.event.client_payload.pr_number }},"student_id":"${{ github.event.client_payload.student }}","ref":"${{ github.event.client_payload.ref }}","quiz_result":"${{ steps.quiz.outcome }}","manual_result":"${{ steps.manual_check.outcome }}","plan_result":"${{ steps.plan.outcome }}","run_quiz":"${{ steps.detect.outputs.run_quiz }}","run_manual":"${{ steps.detect.outputs.run_manual }}","run_plan":"${{ steps.detect.outputs.run_plan }}"}'

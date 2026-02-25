@@ -59,7 +59,7 @@ jobs:
 
       - name: Verify Quiz Answers
         id: quiz
-        if: steps.detect.outputs.run_quiz == 'true'
+        if: true #steps.detect.outputs.run_quiz == 'true'
         continue-on-error: true
         run: python ci/check_quiz.py "${{ steps.detect.outputs.tf_dir }}"
 
@@ -149,7 +149,7 @@ jobs:
           terraform show -json tfplan > tfplan.json
 
       - name: Upload Plan to Azure Blob & Generate SAS URL
-        if: steps.plan.outcome == 'success'
+        if: true #steps.plan.outcome == 'success'
         id: upload
         shell: bash
         run: |
@@ -178,7 +178,7 @@ jobs:
           echo "plan_url=$PLAN_URL" >> $GITHUB_OUTPUT
 
       - name: Build callback payload (max 10 properties - limit GitHub API)
-        if: always() && github.event.client_payload.repo
+        if: true #always() && github.event.client_payload.repo
         id: payload
         run: |
           RUN_CHECKS="{\"quiz\":\"${{ steps.detect.outputs.run_quiz || 'false' }}\",\"manual\":\"${{ steps.detect.outputs.run_manual || 'false' }}\",\"plan\":\"${{ steps.detect.outputs.run_plan || 'false' }}\"}"
@@ -191,7 +191,7 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Trigger Student Repo (Callback with Plan URL)
-        if: always() && github.event.client_payload.repo
+        if: true #always() && github.event.client_payload.repo
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.FRAMEWORK_PAT }}

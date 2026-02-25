@@ -131,7 +131,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init
-        if: steps.manual_check.outcome == 'success' || steps.detect.outputs.run_manual == 'false'
+        if: true #steps.manual_check.outcome == 'success' || steps.detect.outputs.run_manual == 'false'
         run: |
           TASK_NAME=$(basename ${{ steps.detect.outputs.tf_dir }})
           terraform -chdir=${{ steps.detect.outputs.tf_dir }} init -input=false \

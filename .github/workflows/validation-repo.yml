@@ -177,6 +177,19 @@ jobs:
           PLAN_URL="https://${{ steps.backend.outputs.STATE_SA }}.blob.core.windows.net/${{ steps.backend.outputs.PLANS_CONTAINER }}/${BLOB_NAME}?${SAS}"
           echo "plan_url=$PLAN_URL" >> $GITHUB_OUTPUT
 
+      - name: Build callback payload (max 10 properties - limit GitHub API)
+        if: always() && github.event.client_payload.repo
+        id: payload
+        run: |
+          RUN_CHECKS="{\"quiz\":\"${{ steps.detect.outputs.run_quiz || 'false' }}\",\"manual\":\"${{ steps.detect.outputs.run_manual || 'false' }}\",\"plan\":\"${{ steps.detect.outputs.run_plan || 'false' }}\"}"
+          RESULTS="{\"quiz\":\"${{ steps.quiz.outcome || 'skipped' }}\",\"manual\":\"${{ steps.manual_check.outcome || 'skipped' }}\",\"plan\":\"${{ steps.plan.outcome || 'skipped' }}\"}"
+          echo "run_checks<<EOF" >> $GITHUB_OUTPUT
+          echo "$RUN_CHECKS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "results<<EOF" >> $GITHUB_OUTPUT
+          echo "$RESULTS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Trigger Student Repo (Callback with Plan URL)
         if: always() && github.event.client_payload.repo
         uses: peter-evans/repository-dispatch@v3
@@ -184,4 +197,4 @@ jobs:
           token: ${{ secrets.FRAMEWORK_PAT }}
           repository: ${{ github.event.client_payload.repo }}
           event-type: validation_plan_ready
-          client-payload: '{"plan_url":"${{ steps.upload.outputs.plan_url }}","tf_dir":"${{ steps.detect.outputs.tf_dir }}","pr_number":${{ github.event.client_payload.pr_number }},"student_id":"${{ github.event.client_payload.student }}","ref":"${{ github.event.client_payload.ref }}","quiz_result":"${{ steps.quiz.outcome }}","manual_result":"${{ steps.manual_check.outcome }}","plan_result":"${{ steps.plan.outcome }}","run_quiz":"${{ steps.detect.outputs.run_quiz }}","run_manual":"${{ steps.detect.outputs.run_manual }}","run_plan":"${{ steps.detect.outputs.run_plan }}"}'
+          client-payload: '{"plan_url":${{ toJSON(steps.upload.outputs.plan_url) }},"tf_dir":${{ toJSON(steps.detect.outputs.tf_dir) }},"pr_number":${{ github.event.client_payload.pr_number }},"student_id":${{ toJSON(github.event.client_payload.student) }},"ref":${{ toJSON(github.event.client_payload.ref) }},"run_checks":${{ toJSON(steps.payload.outputs.run_checks) }},"results":${{ toJSON(steps.payload.outputs.results) }}}'

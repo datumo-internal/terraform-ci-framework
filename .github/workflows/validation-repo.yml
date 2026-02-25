@@ -59,19 +59,19 @@ jobs:
 
       - name: Verify Quiz Answers
         id: quiz
-        if: true #steps.detect.outputs.run_quiz == 'true'
+        if: steps.detect.outputs.run_quiz == 'true'
         continue-on-error: true
         run: python ci/check_quiz.py "${{ steps.detect.outputs.tf_dir }}"
 
       - name: Azure Login
-        if: true #steps.quiz.outcome == 'success' || steps.quiz.outcome == 'skipped'
+        if: steps.quiz.outcome == 'success' || steps.quiz.outcome == 'skipped'
         uses: azure/login@v1
         with:
           creds: '{"clientId":"${{ secrets.ARM_CLIENT_ID }}","clientSecret":"${{ secrets.ARM_CLIENT_SECRET }}","subscriptionId":"${{ secrets.ARM_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.ARM_TENANT_ID }}"}'
 
       - name: Setup Terraform Backend
         id: backend
-        if: true #steps.quiz.outcome == 'success' || steps.quiz.outcome == 'skipped'
+        if: steps.quiz.outcome == 'success' || steps.quiz.outcome == 'skipped'
         shell: bash
         run: |
           RAW_ID="${{ github.event.client_payload.student }}"
@@ -110,28 +110,28 @@ jobs:
 
       - name: Check Manual Steps (Azure)
         id: manual_check
-        if: true #(steps.quiz.outcome == 'success' || steps.quiz.outcome == 'skipped') && steps.detect.outputs.run_manual == 'true'
+        if: (steps.quiz.outcome == 'success' || steps.quiz.outcome == 'skipped') && steps.detect.outputs.run_manual == 'true'
         env:
           TF_VAR_student_id: ${{ github.event.client_payload.student }}
         run: |
           python ci/check_manual_steps.py "${{ steps.detect.outputs.tf_dir }}" "${{ env.TF_VAR_student_id }}" || true
 
       - name: Parse Answers to Env Vars
-        if: true #steps.manual_check.outcome == 'success' || steps.detect.outputs.run_manual == 'false'
+        if: steps.manual_check.outcome == 'success' || steps.detect.outputs.run_manual == 'false'
         run: |
           if [ -f ci/set_env.py ]; then python ci/set_env.py "${{ steps.detect.outputs.tf_dir }}"; fi
 
       - name: Create terraform.tfvars for CI
-        if: true #steps.manual_check.outcome == 'success' || steps.detect.outputs.run_manual == 'false'
+        if: steps.manual_check.outcome == 'success' || steps.detect.outputs.run_manual == 'false'
         run: |
           if [ -f ci/create_tfvars.py ]; then python ci/create_tfvars.py "${{ steps.detect.outputs.tf_dir }}"; fi
 
       - name: Setup Terraform
-        if: true #steps.manual_check.outcome == 'success' || steps.detect.outputs.run_manual == 'false'
+        if: steps.manual_check.outcome == 'success' || steps.detect.outputs.run_manual == 'false'
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init
-        if: true #steps.manual_check.outcome == 'success' || steps.detect.outputs.run_manual == 'false'
+        if: steps.manual_check.outcome == 'success' || steps.detect.outputs.run_manual == 'false'
         run: |
           TASK_NAME=$(basename ${{ steps.detect.outputs.tf_dir }})
           terraform -chdir=${{ steps.detect.outputs.tf_dir }} init -input=false \
@@ -141,7 +141,7 @@ jobs:
             -backend-config="key=${{ github.event.client_payload.student }}/${TASK_NAME}.tfstate"
 
       - name: Terraform Plan
-        if: true #steps.manual_check.outcome == 'success' || steps.detect.outputs.run_manual == 'false'
+        if: steps.manual_check.outcome == 'success' || steps.detect.outputs.run_manual == 'false'
         id: plan
         run: |
           cd ${{ steps.detect.outputs.tf_dir }}
@@ -149,7 +149,7 @@ jobs:
           terraform show -json tfplan > tfplan.json
 
       - name: Upload Plan to Azure Blob & Generate SAS URL
-        if: true #steps.plan.outcome == 'success'
+        if: steps.plan.outcome == 'success'
         id: upload
         shell: bash
         run: |
@@ -178,7 +178,7 @@ jobs:
           echo "plan_url=$PLAN_URL" >> $GITHUB_OUTPUT
 
       - name: Build callback payload (max 10 properties - limit GitHub API)
-        if: true #always() && github.event.client_payload.repo
+        if: always() && github.event.client_payload.repo
         id: payload
         run: |
           RUN_CHECKS="{\"quiz\":\"${{ steps.detect.outputs.run_quiz || 'false' }}\",\"manual\":\"${{ steps.detect.outputs.run_manual || 'false' }}\",\"plan\":\"${{ steps.detect.outputs.run_plan || 'false' }}\"}"
@@ -191,7 +191,7 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Trigger Student Repo (Callback with Plan URL)
-        if: true #always() && github.event.client_payload.repo
+        if: always() && github.event.client_payload.repo
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.FRAMEWORK_PAT }}

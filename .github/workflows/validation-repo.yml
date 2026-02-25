@@ -1,8 +1,8 @@
 # =============================================================================
-# VALIDATION REPO (V) - Repozytorium z credentialami Azure
-# Uruchamiane przez repository_dispatch z repo studenta (S).
-# Wykonuje: terraform init, plan, parsowanie do JSON, manual check (Azure),
-# upload planu do Azure Blob, callback do repo studenta.
+# VALIDATION REPO (V) - Repository with Azure credentials
+# Triggered by repository_dispatch from the student repository (S).
+# Performs: terraform init, plan, parsing to JSON, manual check (Azure),
+# uploads the plan to Azure Blob, callback to the student repository.
 # =============================================================================
 
 name: Validation (Terraform Plan + Azure Checks)

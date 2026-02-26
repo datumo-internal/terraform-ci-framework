@@ -114,7 +114,7 @@ jobs:
         env:
           TF_VAR_student_id: ${{ github.event.client_payload.student }}
         run: |
-          python ci/check_manual_steps.py "${{ steps.detect.outputs.tf_dir }}" "${{ env.TF_VAR_student_id }}" || true
+          python ci/check_manual_steps.py "${{ steps.detect.outputs.tf_dir }}" "${{ env.TF_VAR_student_id }}"
 
       - name: Parse Answers to Env Vars
         if: steps.manual_check.outcome == 'success' || steps.detect.outputs.run_manual == 'false'

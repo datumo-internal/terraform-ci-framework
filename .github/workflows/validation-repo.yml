@@ -123,6 +123,8 @@ jobs:
 
       - name: Create terraform.tfvars for CI
         if: steps.manual_check.outcome == 'success' || steps.detect.outputs.run_manual == 'false'
+        env:
+          TF_VAR_student_id: ${{ github.event.client_payload.student }}
         run: |
           if [ -f ci/create_tfvars.py ]; then python ci/create_tfvars.py "${{ steps.detect.outputs.tf_dir }}"; fi
 

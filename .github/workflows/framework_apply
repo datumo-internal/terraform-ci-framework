@@ -1,0 +1,125 @@
+# =============================================================================
+# FRAMEWORK REPO (V) - Repository z credentials Azure
+# Triggered by repository_dispatch z student repository (S) przy merge.
+# Wykonuje: terraform init, plan, apply - bez callbacku.
+# =============================================================================
+
+name: Framework Apply (Terraform Init, Plan, Apply)
+
+on:
+  repository_dispatch:
+    types: [framework_apply]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    env:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      TF_VAR_student_id: ${{ github.event.client_payload.student }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+
+    steps:
+      - name: Checkout Student Repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.client_payload.repo }}
+          ref: ${{ github.event.client_payload.ref }}
+          token: ${{ secrets.FRAMEWORK_PAT }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f ci/requirements.txt ]; then pip install -r ci/requirements.txt; fi
+
+      - name: Determine task directory
+        id: detect
+        run: |
+          TF_DIR="${{ github.event.client_payload.tf_dir }}"
+          if [ -z "$TF_DIR" ]; then
+            TASK_DIRS=$(ls -d task*/ 2>/dev/null | head -n 1 | sed 's#/##')
+            TF_DIR="$TASK_DIRS"
+          fi
+          if [ -z "$TF_DIR" ]; then
+            echo "No task directory found"
+            exit 1
+          fi
+          echo "tf_dir=$TF_DIR" >> $GITHUB_OUTPUT
+
+      - name: Parse Answers to Env Vars
+        run: |
+          if [ -f ci/set_env.py ]; then python ci/set_env.py "${{ steps.detect.outputs.tf_dir }}"; fi
+
+      - name: Create terraform.tfvars for CI
+        env:
+          TF_VAR_student_id: ${{ github.event.client_payload.student }}
+        run: |
+          if [ -f ci/create_tfvars.py ]; then python ci/create_tfvars.py "${{ steps.detect.outputs.tf_dir }}"; fi
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: '{"clientId":"${{ secrets.ARM_CLIENT_ID }}","clientSecret":"${{ secrets.ARM_CLIENT_SECRET }}","subscriptionId":"${{ secrets.ARM_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.ARM_TENANT_ID }}"}'
+
+      - name: Setup Terraform Backend
+        id: backend
+        shell: bash
+        run: |
+          RAW_ID="${{ github.event.client_payload.student }}"
+          LOWER_ID=$(echo "$RAW_ID" | tr '[:upper:]' '[:lower:]')
+          STATE_RG="rg-course-${LOWER_ID}-state"
+          CLEAN_ID=$(echo "$LOWER_ID" | tr -cd 'a-z0-9')
+          SHORT_ID=${CLEAN_ID:0:22}
+          STATE_SA="st${SHORT_ID}"
+          STATE_CONTAINER="tfstate"
+          LOCATION="northeurope"
+
+          if ! az group show --name "$STATE_RG" &>/dev/null; then
+            az group create --name "$STATE_RG" --location "$LOCATION";
+          fi
+
+          if ! az storage account show --name "$STATE_SA" --resource-group "$STATE_RG" &>/dev/null; then
+            az storage account create --name "$STATE_SA" --resource-group "$STATE_RG" --sku Standard_LRS --encryption-services blob;
+          fi
+
+          KEY=$(az storage account keys list --resource-group "$STATE_RG" --account-name "$STATE_SA" --query "[0].value" -o tsv)
+
+          if ! az storage container show --name "$STATE_CONTAINER" --account-name "$STATE_SA" --account-key "$KEY" &>/dev/null; then
+            az storage container create --name "$STATE_CONTAINER" --account-name "$STATE_SA" --account-key "$KEY";
+          fi
+
+          echo "STATE_RG=$STATE_RG" >> $GITHUB_OUTPUT
+          echo "STATE_SA=$STATE_SA" >> $GITHUB_OUTPUT
+          echo "STATE_CONTAINER=$STATE_CONTAINER" >> $GITHUB_OUTPUT
+          echo "STORAGE_KEY=$KEY" >> $GITHUB_OUTPUT
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: |
+          TASK_NAME=$(basename ${{ steps.detect.outputs.tf_dir }})
+          terraform -chdir=${{ steps.detect.outputs.tf_dir }} init -input=false \
+            -backend-config="resource_group_name=${{ steps.backend.outputs.STATE_RG }}" \
+            -backend-config="storage_account_name=${{ steps.backend.outputs.STATE_SA }}" \
+            -backend-config="container_name=${{ steps.backend.outputs.STATE_CONTAINER }}" \
+            -backend-config="key=${{ github.event.client_payload.student }}/${TASK_NAME}.tfstate"
+
+      - name: Terraform Plan
+        run: |
+          cd ${{ steps.detect.outputs.tf_dir }}
+          terraform plan -input=false -out=tfplan
+
+      - name: Terraform Apply
+        run: |
+          cd ${{ steps.detect.outputs.tf_dir }}
+          terraform apply -input=false -auto-approve tfplan
